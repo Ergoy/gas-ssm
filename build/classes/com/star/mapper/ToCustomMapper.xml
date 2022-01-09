@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.ToCustomMapper">
+    <!--对多根据uid查询用户及其关联的订单信息：级联查询的第二种方法（嵌套结果） -->
+    <resultMap type="toCustom" id="ToCustomAnd">
+        <id property="cbid" column="cbid" />       
+        <result property="date" column="date" />
+        <result property="totalprice" column="totalprice" />
+        <!-- 对多级联查询，ofType表示集合中的元素类型 -->
+        <association property="custom" javaType="custom">
+            <id property="cid" column="cid" />
+            <result property="name" column="name" />
+            <result property="linkman" column="linkman" />
+            <result property="addr" column="addr" />
+            <result property="tel" column="tel" />
+            <result property="email" column="email" />
+            <result property="remark" column="remark" />
+            <result property="type" column="type" />
+        </association>
+         <association property="sell" javaType="sell">
+            <id property="sid" column="sid" />
+            <result property="date" column="date" />
+            <result property="totalprice" column="totalprice" />
+            <result property="buyer" column="buyer" />
+        </association>
+    </resultMap>
+    <select id="findAll" resultMap="ToCustomAnd" >   
+    		 select new.cbid,c.cid,c.`name`,new.sid,new.date,new.totalprice
+				from t_custom_info c
+				join ( 
+				select c.cbid,c.cid,s.sid,c.date,c.totalprice
+				from t_custom_back c
+				join t_sell_info s 
+				on c.sid=s.sid
+				) new  
+				on c.cid=new.cid
+        </select>
+    <select id="findById" resultMap="ToCustomAnd" parameterType="String">
+     select new.cbid,c.cid,c.`name`,new.sid,new.date,new.totalprice
+				from t_custom_info c 
+				join (  
+				 select c.cbid,c.cid,s.sid,c.date,c.totalprice
+				 from t_custom_back c
+				 join t_sell_info s
+				 on c.sid=s.sid
+				 ) new  
+				 on c.cid=new.cid
+				where new.cbid=#{cbid}
+    </select>  
+    <update id="updateCustom" parameterType="toCustom">
+    update t_custom_back set cid=#{custom.cid},sid=#{sell.sid},date=#{date}, totalprice=#{totalprice} where cbid=#{cbid}
+    </update> 
+    <insert id="insert" parameterType="toCustom">
+    insert into t_custom_back values(#{cbid},#{custom.cid},#{sell.sid},#{date},#{totalprice})
+    </insert> 
+    <delete id="deleteCustom" parameterType="String">
+		delete from t_custom_back where cbid=#{cbid}
+    </delete>
+</mapper>       

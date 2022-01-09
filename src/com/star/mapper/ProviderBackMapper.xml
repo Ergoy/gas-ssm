@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.ProviderBackMapper">
+    <!--对多根据uid查询用户及其关联的订单信息：级联查询的第二种方法（嵌套结果） -->
+       
+         
+        
+    <resultMap type="providerBack" id="providerBackAnd">
+        <id property="pbdid" column="pbdid" />       
+        <result property="amount" column="amount" />
+        <result property="price" column="price" />
+        <!-- 对多级联查询，ofType表示集合中的元素类型 -->
+       <association property="provider" javaType="provider">
+            <id property="pbid" column="pbid" />
+            <result property="date" column="date" />
+            <result property="totalprice" column="totalprice" />
+        </association>
+         <association property="goods" javaType="goods">
+            <id property="gid" column="gid" />
+            <result property="name" column="name" />
+            <result property="unit" column="unit" />
+            <result property="pin" column="pin" />
+            <result property="pout" column="pout" />
+            <result property="amount" column="amount" />
+        </association>
+    </resultMap>
+    <select id="fandAll" resultMap="providerBackAnd" parameterType="String">
+            SELECT g.*,tbd.*,pb.*
+                FROM t_goods_info g
+                LEFT JOIN t_provider_back_detail tbd    ON g.gid =tbd.gid
+                LEFT JOIN t_provider_back pb ON pb.pbid = tbd.pbid
+                WHERE pb.pbid=#{pbdid}
+        </select>
+    <select id="findById" resultMap="providerBackAnd" parameterType="String">
+    SELECT g.*,tbd.*,pb.*
+                FROM t_goods_info g
+                LEFT JOIN t_provider_back_detail tbd    ON g.gid =tbd.gid
+                LEFT JOIN t_provider_back pb ON pb.pbid = tbd.pbid
+                WHERE tbd.pbdid=#{pbdid}
+    </select>  
+    <update id="updateProvider_back" parameterType="providerBack">
+    update t_provider_back_detail set pbid=#{provider.pbid},gid=#{goods.gid},amount=#{amount},price=#{price} where pbdid=#{pbdid}
+    </update> 
+    <insert id="insert" parameterType="providerBack">
+    insert into t_provider_back_detail values(#{pbdid},#{provider.pbid},#{goods.gid},#{amount},#{price});
+    </insert> 
+    <delete id="deleteProvider_back" parameterType="String">
+    delete from t_provider_back_detail where pbdid=#{pbdid}
+    </delete>
+</mapper>       

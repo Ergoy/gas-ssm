@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.ProviderMapper">
+    <!--对多根据uid查询用户及其关联的订单信息：级联查询的第二种方法（嵌套结果） -->
+    <resultMap type="provider" id="providerAnd">
+        <id property="pbid" column="pbid" />       
+        <result property="date" column="date" />
+        <result property="totalprice" column="totalprice" />
+        <!-- 对多级联查询，ofType表示集合中的元素类型 -->
+       <association property="custom" javaType="custom">
+            <id property="cid" column="cid" />
+            <result property="name" column="name" />
+            <result property="linkman" column="linkman" />
+            <result property="addr" column="addr" />
+            <result property="tel" column="tel" />
+            <result property="email" column="email" />
+            <result property="remark" column="remark" />
+            <result property="type" column="type" />
+        </association>
+         <association property="stock" javaType="stock">
+            <id property="sid" column="sid" />
+            <result property="date" column="date" />
+            <result property="totalprice" column="totalprice" />
+            <result property="buyer" column="buyer" />
+        </association>
+    </resultMap>
+    <select id="findAll" resultMap="providerAnd">
+    select new.pbid,c.cid,c.`name`,new.sid,new.date,new.totalprice
+				from t_custom_info c 
+				join (
+					select p.pbid,p.cid,s.sid,p.date,p.totalprice
+					from t_provider_back p 
+					join t_stock_info s
+					on p.sid=s.sid
+				) new
+				on c.cid=new.cid 
+        </select>
+    <select id="findById" resultMap="providerAnd" parameterType="String">
+    select new.pbid,c.cid,c.`name`,new.sid,new.date,new.totalprice
+				 from t_custom_info c
+				 join (
+				 select p.pbid,p.cid,s.sid,p.date,p.totalprice
+				 from t_provider_back p
+				 join t_stock_info s
+				 on p.sid=s.sid
+				 )new
+				 on c.cid=new.cid
+				 where pbid=#{pbid}
+    </select>  
+    <update id="updateProvider" parameterType="provider">
+    update t_provider_back set cid=#{custom.cid},sid=#{stock.sid},date=#{date}, totalprice=#{totalprice} where pbid=#{pbid}
+    </update> 
+    <insert id="insert" parameterType="provider">
+    insert into t_provider_back values(#{pbid},#{custom.cid},#{stock.sid},#{date},#{totalprice})
+    </insert> 
+    <delete id="deleteProvider" parameterType="String">
+		delete from t_provider_back where pbid=#{pbid}
+    </delete>
+</mapper>       

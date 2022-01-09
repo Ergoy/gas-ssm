@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <beans xmlns="http://www.springframework.org/schema/beans"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+     xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+     xsi:schemaLocation="
+         http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context-4.0.xsd
+         http://www.springframework.org/schema/tx
+         http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+         
+	 <!-- 加载配置文件 -->
+	 <context:property-placeholder location="classpath:config/jdbc.properties"/>  
+   
+     <!-- 1. 数据源 : DriverManagerDataSource -->
+     <bean id="dataSource"
+         class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+         <property name="driverClassName" value="${jdbc1.driverName}" />
+         <property name="url" value="${jdbc1.url}" />
+         <property name="username" value="${jdbc1.user}" />
+         <property name="password" value="${jdbc1.password}" />
+     </bean>
+ 
+     <!-- sqlSessionFactory -->
+     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+         <property name="dataSource" ref="dataSource"></property>
+         <!-- 文件映射器，指定类文件 -->
+         <property name="configLocation" value="classpath:config/mybatis-config.xml" /> 
+          <!-- 自动扫描mapping.xml文件 --> 
+         <property name="mapperLocations" value="classpath*:com/star/mapper/*Mapper.xml"/>
+     </bean>
+ 
+ 	<!-- 配置SqlSessionTemplate -->  
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">  
+    	<!-- 通过构造函数注入 -->
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />  
+    </bean>
+    
+    <!-- 配置mybatis mapper接口 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.star.mapper"/>
+        <property name="sqlSessionTemplateBeanName" value="sqlSessionTemplate"/>
+    </bean> 
+    
+ 
+     <!--
+         4. 事务管理 : DataSourceTransactionManager dataSource:引用上面定义的数据源
+     -->
+     <bean id="txManager"
+         class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+         <property name="dataSource" ref="dataSource"></property>
+     </bean>
+ 
+     <!-- 5. 使用声明式事务
+          transaction-manager：引用上面定义的事务管理器
+      -->
+     <tx:annotation-driven transaction-manager="txManager" />
+ 
+ </beans>

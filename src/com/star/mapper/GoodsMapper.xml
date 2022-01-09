@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.GoodsMapper">
+    <!--对多根据uid查询用户及其关联的订单信息：级联查询的第二种方法（嵌套结果） -->
+    <resultMap type="goods" id="goodsAndtype2">
+        <id property="gid" column="gid" />
+        <result property="name" column="name" />
+        <result property="unit" column="unit" />
+         <result property="pin" column="pin" />
+        <result property="pout" column="pout" />
+        <result property="amount" column="amount" />
+        <!-- 对多级联查询，ofType表示集合中的元素类型 -->
+        <collection property="goodType" ofType="goodsType">
+            <id property="tid" column="tid" />
+            <result property="name" column="name" />
+        </collection>
+    </resultMap>
+    <select id="findAll" resultMap="goodsAndtype2">
+    select i.*,t.tid,t.name from t_goods_info i,t_goods_type t where i.tid=t.tid
+    </select>
+    <select id="getGoodsById" parameterType="String"   resultMap="goodsAndtype2">
+        select i.*,t.tid,t.name from t_goods_info i,t_goods_type t where i.tid=t.tid and gid=#{gid}        
+    </select> 
+    <update id="updateGoods" parameterType="goods">
+    update t_goods_info i set i.`name`=#{name},i.tid=#{goodType.tid},i.unit=#{unit},i.pin=#{pin},i.pout=#{pout},i.amount=#{amount} WHERE i.gid=#{gid}
+    </update>
+    <insert id="addGoods" parameterType="goods">
+    insert into t_goods_info VALUES (#{gid},#{name},#{goodType.tid},#{unit},#{pin},#{pout},#{amount})
+    </insert>
+    <delete id="deleteGoods"  parameterType="String">
+    delete from t_goods_info where gid=#{gid}
+    </delete>
+</mapper>       

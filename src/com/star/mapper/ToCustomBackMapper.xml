@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.ToCustomBackMapper">
+    <!--对多根据uid查询用户及其关联的订单信息：级联查询的第二种方法（嵌套结果） -->
+    <resultMap type="toCustomBack" id="ToCustomBackAnd">
+        <id property="cbdid" column="cbdid" />       
+        <result property="amount" column="amount" />
+        <result property="price" column="price" />
+        <!-- 对多级联查询，ofType表示集合中的元素类型 -->
+       <association property="cust" javaType="toCustom">
+            <id property="cbid" column="cbid" />
+            <result property="date" column="date" />
+            <result property="totalprice" column="totalprice" />
+        </association>
+         <association property="goods" javaType="goods">
+            <id property="gid" column="gid" />
+            <result property="name" column="name" />
+            <result property="unit" column="unit" />
+            <result property="pin" column="pin" />
+            <result property="amount" column="amount" />
+        </association>
+    </resultMap>
+    <select id="fandAll" resultMap="ToCustomBackAnd" parameterType="String">   
+    		 select new.cbdid,pb.cbid,new.gid,new.amount,new.price
+				from t_custom_back pb
+				join ( 
+				select tbd.cbdid,tbd.cbid,g.gid,tbd.amount,tbd.price
+				from t_custom_back_detail tbd
+				join t_goods_info g 
+				on tbd.gid=g.gid
+				)new
+				on pb.cbid=new.cbid 
+				where new.cbid=#{cbdid}
+        </select>
+    <select id="findById" resultMap="ToCustomBackAnd" parameterType="String">
+     select new.cbdid,pb.cbid,new.gid,new.amount,new.price
+				from t_custom_back pb 
+				join (
+				select tbd.cbdid,tbd.cbid,g.gid,tbd.amount,tbd.price 
+				from t_custom_back_detail tbd
+				join t_goods_info g
+				on tbd.gid=g.gid
+				)new
+				on pb.cbid=new.cbid 
+				where new.cbdid=#{cbdid}
+    </select>  
+    <update id="updateCustom_back" parameterType="toCustomBack">
+    update t_custom_back_detail set cbid=#{cust.cbid},gid=#{goods.gid},amount=#{amount},price=#{price} where cbdid=#{cbdid}
+    </update> 
+    <insert id="insert" parameterType="toCustomBack">
+    insert into t_custom_back_detail values(#{cbdid},#{cust.cbid},#{goods.gid},#{amount},#{price});
+    </insert> 
+    <delete id="deleteCustom_back" parameterType="String">
+		delete from t_custom_back_detail where cbdid=#{cbdid}
+    </delete>
+</mapper>       

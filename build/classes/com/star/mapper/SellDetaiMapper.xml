@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.SellDetaiMapper">
+    <!--对多根据uid查询用户及其关联的订单信息：级联查询的第二种方法（嵌套结果） -->
+    <resultMap type="sellDetail" id="sellDetailAnd">
+        <id property="sdid" column="sdid" />       
+        <result property="amount" column="amount" />
+        <result property="price" column="price" />
+        <!-- 对多级联查询，ofType表示集合中的元素类型 -->
+       <association property="sell" javaType="sell">
+            <id property="sid" column="sid" />
+            <result property="date" column="date" />
+            <result property="totalprice" column="totalprice" />
+            <result property="buyer" column="buyer" />
+        </association>
+         <association property="goods" javaType="goods">
+            <id property="gid" column="gid" />
+            <result property="name" column="name" />
+            <result property="unit" column="unit" />
+            <result property="pin" column="pin" />
+            <result property="amount" column="amount" />
+        </association>
+    </resultMap>
+    <select id="findAll" resultMap="sellDetailAnd" parameterType="String">   
+    select new.sdid,si.sid,new.gid,new.amount,new.price
+				 from t_sell_info si
+				 join (
+				select sd.sdid,sd.sid,g.gid,sd.amount,sd.price
+		    	from t_sell_detail sd
+					join t_goods_info g
+					on sd.gid=g.gid 
+				) new
+				 on si.sid=new.sid 
+				where si.sid= #{sdid}
+        </select>
+    <select id="findById" resultMap="sellDetailAnd" parameterType="String">
+     select new.sdid,new.sid,g.gid,new.amount,new.price
+				from t_goods_info g
+			    join (
+				select sd.sdid,si.sid,sd.gid,sd.amount,sd.price
+				from t_sell_detail sd
+			    join	t_sell_info si
+				on sd.sid=si.sid
+				 )new
+				 on g.gid=new.gid
+				 where new.sdid=#{sdid}
+    </select>  
+    <update id="updateSellDetail" parameterType="sellDetail">
+	update t_sell_detail set sid=#{sell.sid},gid=#{goods.gid},amount=#{amount},price=#{price} where sdid=#{sdid}
+    </update> 
+    <insert id="insert" parameterType="sellDetail">
+    insert into t_sell_detail value(#{sdid},#{sell.sid},#{goods.gid},#{amount},#{price})
+    </insert> 
+    <delete id="deleteSellDetail" parameterType="String">
+		delete from t_sell_detail where sdid=#{sdid}
+    </delete>
+</mapper>       

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.mapper.CustomMapper">
+    <!-- 根据type查询一个用户信息 -->
+    <select id="selectCustomByType" parameterType="Integer"
+        resultType="custom">
+        select * from t_custom_info where type = #{type}
+    </select>
+    <!-- 根据id查询一个用户信息 -->
+    <select id="selectCustomById" parameterType="String"
+        resultType="custom">
+        select * from t_custom_info where cid = #{cid}
+    </select>
+    <!-- 查询所有用户信息 -->
+    <select id="selectAllCustom" resultType="custom">
+        select * from t_custom_info
+    </select>
+    <!-- 添加一个用户，#{uname}为 com.mybatis.po.MyUser 的属性值 -->
+    <insert id="addCustom" parameterType="custom">
+    insert into t_custom_info VALUES(#{cid},#{name},#{linkman},#{addr},#{tel},#{email},#{remark},#{type})
+    </insert>
+    <!--修改一个用户 -->
+    <update id="updateCustom" parameterType="custom">
+    update t_custom_info c SET c.`name`=#{name},c.linkman=#{linkman},c.addr=#{addr},c.tel=#{tel},c.email=#{email},c.remark=#{remark}  where c.cid=#{cid}
+    </update>
+    <!-- 删除一个用户 -->
+    <delete id="deleteCustom" parameterType="String">
+        delete from t_custom_info   where cid=#{cid}
+    </delete>
+</mapper>
